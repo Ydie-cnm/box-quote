@@ -1,957 +1,2276 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN">
+
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>纸盒报价中心</title>
+
 <link rel="manifest" href="manifest.json">
+
 <meta name="theme-color" content="#2563eb">
+
 <meta name="mobile-web-app-capable" content="yes">
+
 <meta name="apple-mobile-web-app-capable" content="yes">
+
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
 <meta name="apple-mobile-web-app-title" content="纸盒报价">
+
 <link rel="apple-touch-icon" href="icon-192.png">
+
+<script src="https://dl.ifanr.cn/hydrogen/sdk/sdk-web-latest.js"></script>
+
 <script>
+
 if('serviceWorker' in navigator && location.protocol !== 'file:'){
+
   window.addEventListener('load', ()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+
 }
+
 </script>
+
 <style>
+
   * { margin:0; padding:0; box-sizing:border-box; }
+
   :root{
+
     --bg:#f4f6f9; --card:#ffffff; --primary:#2563eb; --primary-d:#1d4ed8;
+
     --text:#1f2937; --muted:#6b7280; --border:#e5e7eb;
+
     --green:#16a34a; --red:#dc2626; --amber:#d97706;
+
   }
+
   body{ font-family:"Microsoft YaHei","PingFang SC",sans-serif; background:var(--bg); color:var(--text); }
+
   header{ background:linear-gradient(135deg,#1e3a8a,#2563eb); color:#fff; padding:16px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+
   header h1{ font-size:20px; font-weight:600; }
+
   header .sub{ font-size:12px; opacity:.8; margin-top:2px; }
+
   .mode-btn{ background:rgba(255,255,255,.15); color:#fff; border:1px solid rgba(255,255,255,.4); padding:8px 16px; border-radius:20px; cursor:pointer; font-size:14px; transition:.2s; }
+
   .mode-btn:hover{ background:rgba(255,255,255,.3); }
 
+
+
   nav{ background:var(--card); border-bottom:1px solid var(--border); display:flex; gap:4px; padding:0 24px; overflow-x:auto; }
+
   nav button{ background:none; border:none; padding:14px 18px; font-size:15px; cursor:pointer; color:var(--muted); border-bottom:3px solid transparent; white-space:nowrap; }
+
   nav button.active{ color:var(--primary); border-bottom-color:var(--primary); font-weight:600; }
 
+
+
   main{ max-width:1200px; margin:24px auto; padding:0 20px; }
+
   .page{ display:none; }
+
   .page.active{ display:block; }
 
+
+
   .stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:24px; }
+
   .stat{ background:var(--card); border-radius:12px; padding:18px; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+
   .stat .label{ font-size:13px; color:var(--muted); }
+
   .stat .value{ font-size:26px; font-weight:700; margin-top:6px; }
+
   .stat .value.green{ color:var(--green); }
+
   .stat .value.blue{ color:var(--primary); }
 
+
+
   .card{ background:var(--card); border-radius:12px; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,.06); margin-bottom:20px; }
+
   .card h2{ font-size:16px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
 
+
+
   .btn{ background:var(--primary); color:#fff; border:none; padding:8px 18px; border-radius:8px; cursor:pointer; font-size:14px; }
+
   .btn:hover{ background:var(--primary-d); }
+
   .btn.sm{ padding:4px 10px; font-size:12px; border-radius:6px; }
+
   .btn.gray{ background:#e5e7eb; color:#374151; }
+
   .btn.gray:hover{ background:#d1d5db; }
+
   .btn.red{ background:var(--red); }
+
   .btn.green{ background:var(--green); }
 
+
+
   table{ width:100%; border-collapse:collapse; font-size:14px; }
+
   th,td{ padding:10px 12px; text-align:left; border-bottom:1px solid var(--border); }
+
   th{ background:#f9fafb; color:var(--muted); font-weight:600; font-size:13px; white-space:nowrap; }
+
   tr:hover td{ background:#f9fafb; }
+
   .tag{ display:inline-block; padding:2px 8px; border-radius:10px; font-size:12px; }
+
   .tag.std{ background:#dbeafe; color:#1d4ed8; }
+
   .tag.custom{ background:#fef3c7; color:#b45309; }
+
   .tag.in{ background:#dcfce7; color:#15803d; }
+
   .tag.out{ background:#fee2e2; color:#b91c1c; }
+
   .profit-pos{ color:var(--green); font-weight:600; }
+
   .profit-neg{ color:var(--red); font-weight:600; }
 
+
+
   .modal-mask{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:100; padding:16px; }
+
   .modal-mask.show{ display:flex; }
+
   .modal{ background:#fff; border-radius:14px; padding:24px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; }
+
   .modal h3{ margin-bottom:16px; font-size:17px; }
+
   .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
   .form-grid .full{ grid-column:1/-1; }
+
   label{ display:block; font-size:13px; color:var(--muted); margin-bottom:4px; }
+
   input,select,textarea{ width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:14px; font-family:inherit; }
+
   input:focus,select:focus{ outline:none; border-color:var(--primary); }
+
   .modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:18px; }
 
+
+
   .toolbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px; }
+
   .toolbar input,.toolbar select{ width:auto; min-width:140px; }
+
   .empty{ text-align:center; color:var(--muted); padding:40px 0; font-size:14px; }
 
+
+
   /* ===== 客户模式：隐藏一切管理内容 ===== */
+
   body.customer-mode .admin-only{ display:none !important; }
+
   body.customer-mode nav{ display:none; }
+
   body.customer-mode{ background:#fdfbf7; }
+
   .customer-banner{ display:none; background:#fef3c7; color:#92400e; text-align:center; padding:8px; font-size:13px; }
+
   body.customer-mode .customer-banner{ display:block; }
 
+
+
   .toast{ position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#111827; color:#fff; padding:10px 22px; border-radius:24px; font-size:14px; opacity:0; transition:.3s; z-index:200; pointer-events:none; }
+
   .toast.show{ opacity:1; }
 
+
+
   @media (max-width:640px){
+
     .form-grid{ grid-template-columns:1fr; }
+
     table{ font-size:12px; }
+
     th,td{ padding:8px 6px; }
+
   }
+
 </style>
+
 </head>
+
 <body class="customer-mode">
 
+
+
 <header>
+
   <div>
+
     <h1>📦 纸盒报价中心</h1>
+
   </div>
-  <button class="mode-btn" id="modeBtn" onclick="toggleMode()">🔑 管理入口</button>
+
+  <div style="display:flex;align-items:center;gap:12px">
+
+    <span id="syncStatus" class="admin-only" style="font-size:12px;opacity:.9"></span>
+
+    <button class="mode-btn" id="modeBtn" onclick="toggleMode()">🔑 管理入口</button>
+
+  </div>
+
 </header>
+
 <div class="customer-banner">产品报价一览 · 如需下单请联系商家</div>
 
+
+
 <nav>
+
   <button data-page="dashboard" class="active" onclick="showPage('dashboard')">📊 总览</button>
+
   <button data-page="boxes" onclick="showPage('boxes')">📦 盒子档案</button>
+
   <button data-page="inout" onclick="showPage('inout')">🔄 出入库</button>
+
   <button data-page="records" onclick="showPage('records')">📋 流水记录</button>
+
   <button data-page="profit" onclick="showPage('profit')">💰 利润统计</button>
+
   <button data-page="account" onclick="showPage('account')">👤 账号</button>
+
 </nav>
 
+
+
 <main>
+
   <!-- 总览（仅管理员） -->
+
   <div class="page" id="page-dashboard">
+
     <div class="stats" id="statsArea"></div>
+
     <div class="card">
+
       <h2>库存预警（库存 ≤ 10）</h2>
+
       <div id="lowStockArea"></div>
+
     </div>
+
     <div class="card">
+
       <h2>最近流水</h2>
+
       <div id="recentArea"></div>
+
     </div>
+
   </div>
+
+
 
   <!-- 盒子档案（客户看到的是报价单样式） -->
+
   <div class="page active" id="page-boxes">
+
     <div class="card">
+
       <h2><span id="boxesTitle">产品报价单</span>
+
         <span class="admin-only" style="display:inline-flex;gap:8px">
+
           <button class="btn gray" onclick="shareCustomerLink()">🔗 生成客户报价链接</button>
+
           <button class="btn" onclick="openBoxModal()">+ 新增盒子</button>
+
         </span>
+
       </h2>
+
       <div class="toolbar">
+
         <input id="boxSearch" placeholder="搜索名称/材质..." oninput="renderBoxes()">
+
         <select id="boxFilterType" onchange="renderBoxes()">
+
           <option value="">全部类型</option>
+
           <option value="std">标准尺寸</option>
+
           <option value="custom">自定义尺寸</option>
+
         </select>
+
         <select id="boxFilterMaterial" onchange="renderBoxes()">
+
           <option value="">全部材质</option>
+
         </select>
+
       </div>
+
       <div style="overflow-x:auto"><table id="boxTable"></table></div>
+
     </div>
+
   </div>
+
+
 
   <!-- 出入库（仅管理员） -->
+
   <div class="page" id="page-inout">
+
     <div class="card">
+
       <h2>入库登记 <button class="btn green" onclick="openIOModal('in')">+ 入库单</button></h2>
+
       <div class="toolbar">
+
         <input type="date" id="inFrom" onchange="renderIO()">
+
         <span style="color:var(--muted);font-size:13px">至</span>
+
         <input type="date" id="inTo" onchange="renderIO()">
+
         <button class="btn gray" onclick="clearRange('in')">清除</button>
+
         <button class="btn" onclick="exportIO('in')">导出入库数据</button>
+
       </div>
+
       <div id="inList"></div>
+
     </div>
+
     <div class="card">
+
       <h2>出库登记 <button class="btn red" onclick="openIOModal('out')">+ 出库单</button></h2>
+
       <div class="toolbar">
+
         <input type="date" id="outFrom" onchange="renderIO()">
+
         <span style="color:var(--muted);font-size:13px">至</span>
+
         <input type="date" id="outTo" onchange="renderIO()">
+
         <button class="btn gray" onclick="clearRange('out')">清除</button>
+
         <button class="btn" onclick="exportIO('out')">导出出库数据</button>
+
       </div>
+
       <div id="outList"></div>
+
     </div>
+
   </div>
+
+
 
   <!-- 流水记录（仅管理员） -->
+
   <div class="page" id="page-records">
+
     <div class="card">
+
       <h2>全部流水</h2>
+
       <div class="toolbar">
+
         <select id="recFilterBox" onchange="renderRecords()"><option value="">全部盒子</option></select>
+
         <select id="recFilterType" onchange="renderRecords()">
+
           <option value="">全部类型</option>
+
           <option value="in">入库</option>
+
           <option value="out">出库</option>
+
         </select>
+
         <input type="date" id="recFrom" onchange="renderRecords()">
+
         <input type="date" id="recTo" onchange="renderRecords()">
+
         <button class="btn gray" onclick="exportCSV()">导出 CSV</button>
+
       </div>
+
       <div style="overflow-x:auto"><table id="recordTable"></table></div>
+
     </div>
+
   </div>
+
+
 
   <!-- 利润统计（仅管理员） -->
+
   <div class="page" id="page-profit">
+
     <div class="card">
+
       <h2>统计区间</h2>
+
       <div class="toolbar" id="pfRangeBar">
+
         <button class="btn sm gray" data-range="month" onclick="setProfitRange('month',this)">本月</button>
+
         <button class="btn sm gray" data-range="m3" onclick="setProfitRange('m3',this)">近3个月</button>
+
         <button class="btn sm gray" data-range="m6" onclick="setProfitRange('m6',this)">近6个月</button>
+
         <button class="btn sm gray" data-range="year" onclick="setProfitRange('year',this)">今年</button>
+
         <button class="btn sm" data-range="all" onclick="setProfitRange('all',this)">全部</button>
+
         <input type="date" id="pfFrom" onchange="setProfitRange('custom')">
+
         <span style="color:var(--muted);font-size:13px">至</span>
+
         <input type="date" id="pfTo" onchange="setProfitRange('custom')">
+
       </div>
+
     </div>
+
     <div class="stats" id="profitStats"></div>
+
     <div class="card">
+
       <h2>按月利润明细</h2>
+
       <div style="overflow-x:auto"><table id="profitMonthTable"></table></div>
+
     </div>
+
     <div class="card">
+
       <h2>各盒子利润明细</h2>
+
       <div style="overflow-x:auto"><table id="profitTable"></table></div>
+
     </div>
+
   </div>
+
+
 
   <!-- 账号管理（仅管理员） -->
+
   <div class="page" id="page-account">
+
     <div class="card">
+
       <h2>当前账号</h2>
+
       <div id="curAccount" style="margin-bottom:12px"></div>
-      <button class="btn gray" onclick="logoutAdmin()">退出登录（回到客户视图）</button>
-    </div>
-    <div class="card">
-      <h2>管理员账号管理</h2>
+
       <div class="toolbar">
-        <input id="newAdminUser" placeholder="新管理员用户名">
-        <input id="newAdminPwd" type="password" placeholder="密码">
-        <button class="btn" onclick="addAdmin()">+ 添加管理员</button>
+
+        <input id="chgPwd" type="password" placeholder="输入新密码">
+
+        <button class="btn" onclick="changePwd()">修改我的密码</button>
+
+        <button class="btn gray" onclick="logoutAdmin()">退出登录（回到客户视图）</button>
+
       </div>
-      <div id="adminList"></div>
+
     </div>
+
+    <div class="card">
+
+      <h2>管理员账号管理</h2>
+
+      <div class="toolbar">
+
+        <input id="newAdminUser" placeholder="新管理员用户名">
+
+        <input id="newAdminPwd" type="password" placeholder="密码">
+
+        <button class="btn" onclick="addAdmin()">+ 添加管理员</button>
+
+      </div>
+
+      <div id="adminList"></div>
+
+    </div>
+
   </div>
+
 </main>
 
+
+
 <!-- 盒子编辑弹窗 -->
+
 <div class="modal-mask" id="boxModal">
+
   <div class="modal">
+
     <h3 id="boxModalTitle">新增盒子</h3>
+
     <div class="form-grid">
+
       <div class="full"><label>盒子名称 *</label><input id="bName" placeholder="如：淘宝1号箱 / 定制礼盒"></div>
+
       <div><label>长 (cm)</label><input id="bL" type="number" min="0" step="0.1"></div>
+
       <div><label>宽 (cm)</label><input id="bW" type="number" min="0" step="0.1"></div>
+
       <div><label>高 (cm)</label><input id="bH" type="number" min="0" step="0.1"></div>
+
       <div><label>尺寸类型</label><select id="bStd"><option value="std">标准尺寸</option><option value="custom">自定义尺寸</option></select></div>
+
       <div><label>厚度</label>
+
         <select id="bThick">
+
           <option>三层</option><option>五层</option><option>七层</option>
+
           <option>250g</option><option>300g</option><option>350g</option><option>400g</option>
+
           <option value="__custom">其他（手动填写）</option>
+
         </select>
+
         <input id="bThickCustom" placeholder="手动填写厚度" style="margin-top:6px;display:none">
+
       </div>
+
       <div><label>材质</label>
+
         <select id="bMat">
+
           <option>瓦楞纸</option><option>牛皮纸</option><option>白卡纸</option>
+
           <option>灰板纸</option><option>铜版纸</option><option>特种纸</option>
+
           <option value="__custom">其他（手动填写）</option>
+
         </select>
+
         <input id="bMatCustom" placeholder="手动填写材质" style="margin-top:6px;display:none">
+
       </div>
+
       <div><label>展示售价（客户看到的价格，元/个）*</label><input id="bPrice" type="number" min="0" step="0.01" placeholder="给客户看的价格"></div>
+
       <div class="full"><label>备注</label><input id="bNote" placeholder="供应商、存放位置等（客户不可见）"></div>
+
     </div>
+
     <div class="modal-actions">
+
       <button class="btn gray" onclick="closeModal('boxModal')">取消</button>
+
       <button class="btn" onclick="saveBox()">保存</button>
+
     </div>
+
   </div>
+
 </div>
+
+
 
 <!-- 出入库弹窗 -->
+
 <div class="modal-mask" id="ioModal">
+
   <div class="modal">
+
     <h3 id="ioModalTitle">入库单</h3>
+
     <div class="form-grid">
+
       <div class="full"><label>选择盒子 *</label><select id="ioBox"></select></div>
+
       <div><label>数量 *</label><input id="ioQty" type="number" min="1" step="1"></div>
+
       <div><label>日期 *</label><input id="ioDate" type="date"></div>
+
       <div><label id="ioPriceLabel">进货单价（元/个）*</label><input id="ioPrice" type="number" min="0" step="0.01"></div>
+
       <div><label id="ioPartyLabel">供应商</label><input id="ioParty"></div>
+
       <div class="full"><label id="ioNoteLabel">入库备注</label><input id="ioNote" placeholder="如：批次号、运费、破损情况等"></div>
+
     </div>
+
     <div class="modal-actions">
+
       <button class="btn gray" onclick="closeModal('ioModal')">取消</button>
+
       <button class="btn" onclick="saveIO()">保存</button>
+
     </div>
+
   </div>
+
 </div>
+
+
 
 <!-- 管理员登录弹窗 -->
+
 <div class="modal-mask" id="pwdModal">
+
   <div class="modal" style="max-width:360px">
+
     <h3>管理员登录</h3>
+
     <label>用户名</label>
+
     <input id="pwdUser" placeholder="请输入用户名" onkeydown="if(event.key==='Enter')submitPwd()">
+
     <label style="margin-top:10px">密码</label>
+
     <input type="password" id="pwdInput" placeholder="请输入密码" onkeydown="if(event.key==='Enter')submitPwd()">
+
     <div class="modal-actions">
+
       <button class="btn gray" onclick="closeModal('pwdModal')">取消</button>
+
       <button class="btn" onclick="submitPwd()">登录</button>
+
     </div>
+
   </div>
+
 </div>
+
+
 
 <!-- 确认弹窗 -->
+
 <div class="modal-mask" id="confirmModal">
+
   <div class="modal" style="max-width:400px">
+
     <h3>确认操作</h3>
+
     <div id="confirmMsg" style="font-size:14px;line-height:1.6;color:var(--text);margin:12px 0"></div>
+
     <div class="modal-actions">
+
       <button class="btn gray" onclick="closeModal('confirmModal')">取消</button>
+
       <button class="btn red" onclick="confirmOk()">确定</button>
+
     </div>
+
   </div>
+
 </div>
 
+
+
 <!-- 链接复制弹窗 -->
+
 <div class="modal-mask" id="linkModal">
+
   <div class="modal">
+
     <h3>客户报价链接</h3>
+
     <label>复制以下链接发给客户</label>
+
     <textarea id="linkText" readonly rows="4" onclick="this.select()"></textarea>
+
     <div class="modal-actions">
+
       <button class="btn gray" onclick="closeModal('linkModal')">关闭</button>
+
       <button class="btn" onclick="copyLink()">复制链接</button>
+
     </div>
+
   </div>
+
 </div>
+
+
 
 <div class="toast" id="toast"></div>
 
+
+
 <script>
-/* ============ 数据层：按管理员隔离 ============ */
-const LS_ACCOUNTS = 'boxWarehouse_accounts_v1';
-const LS_KEY = 'boxWarehouse_v1'; // 旧版单账号数据（用于迁移）
-let accounts = loadAccounts();
+
+/* ============ 数据层：知晓云云端存储，按管理员隔离 ============ */
+
+const BAAS_CLIENT_ID = '85feb81572786f3e7555';
+
+const LS_ACCOUNTS = 'boxWarehouse_accounts_v1'; // 旧版本地账号（仅用于首次登录时迁移上云）
+
+const LS_KEY = 'boxWarehouse_v1';               // 更早的单账号数据（用于迁移）
+
+const LS_KNOWN = 'boxWarehouse_knownAdmins';    // 本设备登录/创建过的管理员名
+
+let baasReady = false;
+
+let adminDataTable = null;
+
+try{
+
+  if(window.BaaS){ BaaS.init(BAAS_CLIENT_ID); adminDataTable = new BaaS.TableObject('admin_data'); baasReady = true; }
+
+}catch(e){ baasReady = false; }
+
+
+
+let accounts = loadAccounts();   // 旧本地账号（迁移用）
+
 let currentUser = null;   // 当前登录的管理员用户名
+
+let myUserId = null;      // 当前管理员的云端用户ID（用于给数据行加"仅本人可见"锁）
+
+let sessionPwd = null;    // 当前账号密码（仅内存暂存：创建新管理员后重新登录回自己、修改密码时验证用）
+
+let cloudRowId = null;    // 当前管理员在云端的数据行 id
+
 let DB = { boxes:[], records:[] };
 
+
+
 function loadAccounts(){
+
   try{ const d = JSON.parse(localStorage.getItem(LS_ACCOUNTS)); if(d && typeof d==='object') return d; }catch(e){}
+
   return {};
+
 }
+
 function saveAccounts(){ localStorage.setItem(LS_ACCOUNTS, JSON.stringify(accounts)); }
 
-/* 首次运行：若存在旧数据，迁移到默认管理员 admin / yto85700 */
+
+
+/* 首次运行：若存在更早的旧数据，先挂到默认管理员 admin / yto857007 名下（待首次登录时自动上云） */
+
 (function migrate(){
+
   if(Object.keys(accounts).length) return;
+
   let old = null;
+
   try{ const d = JSON.parse(localStorage.getItem(LS_KEY)); if(d && d.boxes && d.records) old = d; }catch(e){}
-  accounts['admin'] = { pwd:'yto85700', boxes: old?old.boxes:[], records: old?old.records:[] };
+
+  accounts['admin'] = { pwd:'yto857007', boxes: old?old.boxes:[], records: old?old.records:[] };
+
   saveAccounts();
+
   if(old) localStorage.removeItem(LS_KEY);
+
 })();
 
-function loadUserDB(){
-  const acc = accounts[currentUser];
-  DB = { boxes: acc?acc.boxes||[] : [], records: acc?acc.records||[] : [] };
-}
-function save(){
+if(!localStorage.getItem(LS_KNOWN)) localStorage.setItem(LS_KNOWN, JSON.stringify(['admin']));
+
+
+
+function getKnownAdmins(){ try{ const a = JSON.parse(localStorage.getItem(LS_KNOWN)); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+
+function addKnownAdmin(n){ const a = getKnownAdmins(); if(!a.includes(n)){ a.push(n); localStorage.setItem(LS_KNOWN, JSON.stringify(a)); } }
+
+
+
+/* 本机缓存（断网时可查看，联网后自动同步） */
+
+const cacheKey = u => 'boxWarehouse_cloud_' + u;
+
+function writeLocalCache(){
+
   if(!currentUser) return;
-  accounts[currentUser].boxes = DB.boxes;
-  accounts[currentUser].records = DB.records;
-  saveAccounts();
+
+  localStorage.setItem(cacheKey(currentUser), JSON.stringify({ rowId:cloudRowId, boxes:DB.boxes, records:DB.records }));
+
 }
+
+function readLocalCache(u){
+
+  try{ const d = JSON.parse(localStorage.getItem(cacheKey(u))); if(d && d.boxes) return d; }catch(e){}
+
+  return null;
+
+}
+
+
+
+function setSyncStatus(t){ const el = document.getElementById('syncStatus'); if(el) el.textContent = t; }
+
+
+
+/* 取当前登录令牌（SDK 存在 localStorage 的 auth_token 里，JSON 包装） */
+
+const CLOUD_API = 'https://' + BAAS_CLIENT_ID + '.myminapp.com';
+
+function getCloudToken(){
+
+  try{
+
+    if(window.BaaS && typeof BaaS.getAuthToken === 'function'){ const t = BaaS.getAuthToken(); if(t) return t; }
+
+  }catch(e){}
+
+  try{
+
+    const raw = localStorage.getItem('auth_token');
+
+    if(raw){ const o = JSON.parse(raw); if(o && o.value) return o.value; if(typeof o === 'string') return o; }
+
+  }catch(e){}
+
+  return null;
+
+}
+
+
+
+/* ---- 云端读写：每个管理员在 admin_data 表里只有一行（payload=JSON），行级权限锁=仅本人可读可写 ---- */
+
+async function cloudFindMyRow(){
+
+  const res = await adminDataTable.setQuery(new BaaS.Query()).limit(10).find();
+
+  const objs = (res && res.data && res.data.objects) || [];
+
+  return objs[0] || null;
+
+}
+
+/* 建行必须走原生接口：SDK 的 create 不会带上 read_perm/write_perm 锁 */
+
+async function cloudCreateRow(payloadObj, lockUid){
+
+  const token = getCloudToken();
+
+  if(!token) throw new Error('no token');
+
+  const body = { payload: JSON.stringify(payloadObj) };
+
+  if(lockUid){ body.read_perm = ['user:'+lockUid]; body.write_perm = ['user:'+lockUid]; }
+
+  const res = await fetch(CLOUD_API + '/hserve/v2.0/table/admin_data/record/', {
+
+    method:'POST',
+
+    headers:{
+
+      'Content-Type':'application/json',
+
+      'X-Hydrogen-Client-ID': BAAS_CLIENT_ID,
+
+      'Authorization': 'Hydrogen-r1 ' + token
+
+    },
+
+    body: JSON.stringify(body)
+
+  });
+
+  if(!res.ok) throw new Error('create failed:' + res.status);
+
+  const data = await res.json();
+
+  return data.id || data._id || null;
+
+}
+
+async function cloudUpdateRow(){
+
+  if(!cloudRowId){
+
+    const row = await cloudFindMyRow().catch(()=>null);
+
+    cloudRowId = row ? row.id : await cloudCreateRow(DB, myUserId);
+
+  }
+
+  const rec = adminDataTable.getWithoutData(cloudRowId);
+
+  rec.set('payload', JSON.stringify(DB));
+
+  await rec.update();
+
+}
+
+
+
+/* 登录成功后调用：从云端取回我的数据；首次登录则把旧本地数据上传上云 */
+
+async function loadUserDB(){
+
+  cloudRowId = null;
+
+  const legacy = accounts[currentUser] || null;
+
+  try{
+
+    const row = await cloudFindMyRow();
+
+    if(row){
+
+      cloudRowId = row.id;
+
+      let payload = {};
+
+      try{ payload = JSON.parse(row.payload || '{}'); }catch(e){}
+
+      DB = { boxes: payload.boxes||[], records: payload.records||[] };
+
+    }else{
+
+      DB = { boxes: legacy?(legacy.boxes||[]):[], records: legacy?(legacy.records||[]):[] };
+
+      cloudRowId = await cloudCreateRow(DB, myUserId);
+
+      if(DB.boxes.length || DB.records.length) setTimeout(()=>toast('旧数据已自动迁移上云'), 600);
+
+    }
+
+    if(legacy){ delete accounts[currentUser]; saveAccounts(); }
+
+    writeLocalCache();
+
+    setSyncStatus('☁️ 已同步');
+
+  }catch(e){
+
+    const cache = readLocalCache(currentUser);
+
+    if(cache){ cloudRowId = cache.rowId||null; DB = { boxes:cache.boxes||[], records:cache.records||[] }; }
+
+    else DB = { boxes:[], records:[] };
+
+    setSyncStatus('⚠️ 网络异常，当前为本机缓存数据');
+
+  }
+
+}
+
+
+
+let saveTimer = null;
+
+function save(){
+
+  if(!currentUser) return;
+
+  writeLocalCache();
+
+  setSyncStatus('☁️ 同步中…');
+
+  clearTimeout(saveTimer);
+
+  saveTimer = setTimeout(async ()=>{
+
+    if(!currentUser) return;
+
+    try{ await cloudUpdateRow(); setSyncStatus('☁️ 已同步'); }
+
+    catch(e){ setSyncStatus('⚠️ 同步失败，数据已存本机，恢复网络后自动重试'); }
+
+  }, 600);
+
+}
+
+window.addEventListener('online', ()=>{ if(currentUser) save(); });
+
+
+
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
+
+
 /* 客户分享链接里的数据（只含报价，不含成本/库存/流水） */
+
 let sharedBoxes = null;
+
 try{
+
   const m = location.hash.match(/#data=([A-Za-z0-9\-_]+)/);
+
   if(m){
+
     const b64 = m[1].replace(/-/g,'+').replace(/_/g,'/');
+
     sharedBoxes = JSON.parse(decodeURIComponent(escape(atob(b64))));
+
   }
+
 }catch(e){ sharedBoxes = null; }
 
+
+
 function visibleBoxes(){ return customerMode && sharedBoxes ? sharedBoxes : DB.boxes; }
+
 function stockOf(boxId){
+
   return DB.records.reduce((s,r)=>{
+
     if(r.boxId!==boxId) return s;
+
     return s + (r.type==='in' ? r.qty : -r.qty);
+
   },0);
+
 }
+
 function avgCost(boxId){
+
   let qty=0, amt=0;
+
   DB.records.filter(r=>r.boxId===boxId && r.type==='in').forEach(r=>{ qty+=r.qty; amt+=r.qty*r.price; });
+
   return qty>0 ? amt/qty : 0;
+
 }
+
 function boxById(id){ return DB.boxes.find(b=>b.id===id); }
+
 function fmt(n){ return '¥' + Number(n||0).toFixed(2); }
+
 function esc(s){ return String(s??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
 function sizeStr(b){ return `${b.l||0}×${b.w||0}×${b.h||0} cm`; }
 
+
+
 function toast(msg){
+
   const t = document.getElementById('toast');
+
   t.textContent = msg; t.classList.add('show');
+
   setTimeout(()=>t.classList.remove('show'), 1800);
+
 }
+
+
 
 /* ============ 客户/管理模式 ============ */
+
 let customerMode = true;   // 默认客户视图
+
 const ADMIN_PAGES = ['dashboard','inout','records','profit'];
 
+
+
 function toggleMode(){
+
   if(customerMode){
+
     document.getElementById('pwdUser').value = '';
+
     document.getElementById('pwdInput').value = '';
+
     document.getElementById('pwdModal').classList.add('show');
+
     setTimeout(()=>document.getElementById('pwdUser').focus(), 100);
+
   }else{
+
     logoutAdmin();
+
   }
+
 }
-function submitPwd(){
+
+let logining = false;
+
+async function submitPwd(){
+
   const u = document.getElementById('pwdUser').value.trim();
+
   const pwd = document.getElementById('pwdInput').value;
+
   if(!u) return toast('请输入用户名');
-  const acc = accounts[u];
-  if(!acc || acc.pwd !== pwd){ toast('用户名或密码错误'); return; }
-  currentUser = u;
-  loadUserDB();
-  closeModal('pwdModal');
-  customerMode = false;
-  document.body.classList.remove('customer-mode');
-  document.getElementById('modeBtn').textContent = '👁 切换为客户视图';
-  document.getElementById('boxesTitle').textContent = '盒子档案';
-  showPage('dashboard');
-  renderAll();
+
+  if(!pwd) return toast('请输入密码');
+
+  if(logining) return;
+
+  if(!baasReady) return toast('无法连接云服务，请检查网络后刷新页面');
+
+  logining = true;
+
+  setSyncStatus('☁️ 登录中…');
+
+  try{
+
+    let authed = false, regConflict = false;
+
+    try{
+
+      await BaaS.auth.login({ username:u, password:pwd });
+
+      authed = true;
+
+    }catch(e){
+
+      /* 云端还没有这个账号：若与旧本地账号密码一致，自动注册上云并迁移旧数据 */
+
+      const legacy = accounts[u];
+
+      if(legacy && legacy.pwd === pwd){
+
+        try{ await BaaS.auth.register({ username:u, password:pwd }); authed = true; }catch(e2){ regConflict = true; }
+
+      }
+
+    }
+
+    if(!authed){ setSyncStatus(''); toast(regConflict ? '云端已有同名账号但密码不一致，请联系老板处理' : '用户名或密码错误（或网络异常）'); return; }
+
+    currentUser = u;
+
+    sessionPwd = pwd;
+
+    try{ const me = await BaaS.auth.getCurrentUser(); myUserId = me.id || (me.get && me.get('user_id')) || null; }catch(e){}
+
+    addKnownAdmin(u);
+
+    await loadUserDB();
+
+    closeModal('pwdModal');
+
+    customerMode = false;
+
+    document.body.classList.remove('customer-mode');
+
+    document.getElementById('modeBtn').textContent = '👁 切换为客户视图';
+
+    document.getElementById('boxesTitle').textContent = '盒子档案';
+
+    showPage('dashboard');
+
+    renderAll();
+
+  } finally { logining = false; }
+
 }
+
 function logoutAdmin(){
+
+  try{ BaaS.auth.logout(); }catch(e){}
+
   currentUser = null;
+
+  myUserId = null;
+
+  sessionPwd = null;
+
+  cloudRowId = null;
+
+  setSyncStatus('');
+
   DB = { boxes:[], records:[] };
+
   customerMode = true;
+
   document.body.classList.add('customer-mode');
+
   document.getElementById('modeBtn').textContent = '🔑 管理入口';
+
   document.getElementById('boxesTitle').textContent = '产品报价单';
+
   showPage('boxes');
+
   renderAll();
+
 }
+
+
 
 /* ============ 账号管理 ============ */
+
 function renderAccount(){
+
   document.getElementById('curAccount').innerHTML =
+
     `当前登录：<b>${esc(currentUser)}</b> · 我的盒子 ${DB.boxes.length} 个 · 流水 ${DB.records.length} 条`;
-  const names = Object.keys(accounts);
+
+  const names = [...new Set([currentUser, ...getKnownAdmins()])];
+
   document.getElementById('adminList').innerHTML =
-    `<table><tr><th>用户名</th><th>盒子数</th><th>流水数</th><th>操作</th></tr>` +
+
+    `<table><tr><th>用户名</th><th>说明</th><th>操作</th></tr>` +
+
     names.map(n=>`<tr>
+
       <td><b>${esc(n)}</b>${n===currentUser?' <span class="tag in">当前</span>':''}</td>
-      <td>${(accounts[n].boxes||[]).length}</td>
-      <td>${(accounts[n].records||[]).length}</td>
+
+      <td style="color:var(--muted);font-size:13px">${n===currentUser?'本人账号':'数据与你完全隔离'}</td>
+
       <td>${n===currentUser ? '<span style="color:var(--muted);font-size:12px">不能删除自己</span>'
+
         : `<button class="btn sm red" onclick="delAdmin('${esc(n)}')">删除</button>`}</td>
-    </tr>`).join('') + `</table>`;
+
+    </tr>`).join('') + `</table>
+
+    <div style="color:var(--muted);font-size:12px;margin-top:8px">列表显示在本设备登录或创建过的管理员。每个管理员的盒子、流水、库存互相隔离，互不可见。</div>`;
+
 }
-function addAdmin(){
+
+let addingAdmin = false;
+
+async function addAdmin(){
+
   const u = document.getElementById('newAdminUser').value.trim();
+
   const p = document.getElementById('newAdminPwd').value;
+
   if(!u) return toast('请输入用户名');
-  if(!p) return toast('请输入密码');
-  if(accounts[u]) return toast('该用户名已存在');
-  accounts[u] = { pwd:p, boxes:[], records:[] };
-  saveAccounts();
+
+  if(!p || p.length < 4) return toast('密码至少 4 位');
+
+  if(u === currentUser) return toast('不能与当前账号同名');
+
+  if(!baasReady) return toast('无法连接云服务，请检查网络后重试');
+
+  if(addingAdmin) return;
+
+  addingAdmin = true;
+
+  setSyncStatus('☁️ 正在创建…');
+
+  /* 注册成功后登录态会自动切换成新账号：先以新账号身份建好空数据行，再登录回自己 */
+
+  try{
+
+    await BaaS.auth.register({ username:u, password:p });
+
+  }catch(e){
+
+    addingAdmin = false;
+
+    setSyncStatus('☁️ 已同步');
+
+    toast('创建失败：该用户名可能已被占用');
+
+    return;
+
+  }
+
+  try{
+
+    let newUid = null;
+
+    try{ const me = await BaaS.auth.getCurrentUser(); newUid = me.id || (me.get && me.get('user_id')) || null; }catch(e){}
+
+    /* 此刻登录态是新账号：以新账号身份建行并加"仅本人可见"锁 */
+
+    await cloudCreateRow({ boxes:[], records:[] }, newUid);
+
+  }catch(e){}
+
+  try{
+
+    await BaaS.auth.login({ username:currentUser, password:sessionPwd });
+
+  }catch(e){
+
+    addingAdmin = false;
+
+    toast('管理员 ' + u + ' 已创建，请重新登录你的账号');
+
+    logoutAdmin();
+
+    return;
+
+  }
+
+  addingAdmin = false;
+
+  addKnownAdmin(u);
+
   document.getElementById('newAdminUser').value = '';
+
   document.getElementById('newAdminPwd').value = '';
+
+  setSyncStatus('☁️ 已同步');
+
   renderAccount();
-  toast('管理员 ' + u + ' 已创建');
+
+  toast('管理员 ' + u + ' 已创建，数据独立隔离');
+
 }
+
 function delAdmin(name){
-  askConfirm(`确定删除管理员「${name}」？其盒子和流水数据将一并删除。`, ()=>{
-    delete accounts[name];
-    saveAccounts();
-    renderAccount();
-    toast('已删除');
+
+  askConfirm(`为保护数据安全，网页端不能直接删除云端账号。删除「${name}」需到知晓云后台操作（用户管理 → 找到该用户 → 删除），删除后其账号与数据一并清除。点「确定」打开后台；你也可以直接对我说“帮我删除管理员${name}”，我来操作。`, ()=>{
+
+    window.open('https://cloud.minapp.com/', '_blank');
+
   });
+
 }
+
+async function changePwd(){
+
+  const p = document.getElementById('chgPwd').value;
+
+  if(!p || p.length < 4) return toast('密码至少 4 位');
+
+  if(!baasReady) return toast('无法连接云服务，请检查网络后重试');
+
+  try{
+
+    const user = await BaaS.auth.getCurrentUser();
+
+    await user.updatePassword({ password: sessionPwd, newPassword: p });
+
+    sessionPwd = p;
+
+    document.getElementById('chgPwd').value = '';
+
+    toast('密码已修改，下次登录请使用新密码');
+
+  }catch(e){
+
+    toast('修改失败，请退出后重新登录再试');
+
+  }
+
+}
+
+
 
 /* 自定义确认弹窗 */
+
 let confirmCb = null;
+
 function askConfirm(msg, cb){
+
   document.getElementById('confirmMsg').textContent = msg;
+
   confirmCb = cb;
+
   document.getElementById('confirmModal').classList.add('show');
+
 }
+
 function confirmOk(){
+
   closeModal('confirmModal');
+
   if(confirmCb){ const cb = confirmCb; confirmCb = null; cb(); }
+
 }
+
+
 
 function showPage(p){
+
   if(customerMode) p = 'boxes';   // 客户只能看报价单
+
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.page===p));
+
   document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+
   document.getElementById('page-'+p).classList.add('active');
+
   renderAll();
+
 }
+
+
 
 /* ============ 渲染 ============ */
+
 function renderAll(){
+
   renderBoxes();
+
   if(!customerMode){
+
     renderDashboard(); renderIO(); renderRecords(); renderProfit(); renderAccount();
+
     fillBoxSelects();
+
   }
+
 }
+
+
 
 function renderDashboard(){
+
   const totalStock = DB.boxes.reduce((s,b)=>s+stockOf(b.id),0);
+
   const month = new Date().toISOString().slice(0,7);
+
   const inQ = DB.records.filter(r=>r.type==='in' && r.date.startsWith(month)).reduce((s,r)=>s+r.qty,0);
+
   const outQ = DB.records.filter(r=>r.type==='out' && r.date.startsWith(month)).reduce((s,r)=>s+r.qty,0);
 
+
+
   /* 销售额/毛利只在利润统计页显示，总览页不展示 */
+
   document.getElementById('statsArea').innerHTML = [
+
     {label:'盒子品类', value:DB.boxes.length},
+
     {label:'总库存（个）', value:totalStock, cls:'blue'},
+
     {label:'本月入库', value:inQ},
+
     {label:'本月出库', value:outQ},
+
   ].map(s=>`<div class="stat"><div class="label">${s.label}</div><div class="value ${s.cls||''}">${s.value}</div></div>`).join('');
 
+
+
   const low = DB.boxes.filter(b=>stockOf(b.id)<=10);
+
   document.getElementById('lowStockArea').innerHTML = low.length
+
     ? `<table><tr><th>名称</th><th>规格</th><th>当前库存</th></tr>${low.map(b=>
+
         `<tr><td>${esc(b.name)}</td><td>${sizeStr(b)}</td><td style="color:var(--red);font-weight:600">${stockOf(b.id)}</td></tr>`).join('')}</table>`
+
     : '<div class="empty">暂无库存预警，库存充足 👍</div>';
 
+
+
   /* 最近流水：一行一条的清晰卡片式列表 */
+
   const recent = [...DB.records].sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id)).slice(0,8);
+
   document.getElementById('recentArea').innerHTML = recent.length
+
     ? recent.map(r=>{
+
         const b = boxById(r.boxId);
+
         const isIn = r.type==='in';
+
         return `<div style="display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--border);flex-wrap:wrap">
+
           <span class="tag ${r.type}" style="min-width:44px;text-align:center">${isIn?'入库':'出库'}</span>
+
           <div style="flex:1;min-width:140px">
+
             <div style="font-weight:600">${b?esc(b.name):'[已删除]'}</div>
+
             <div style="font-size:12px;color:var(--muted);margin-top:2px">${esc(r.party||'')}${r.note?' · '+esc(r.note):''}</div>
+
           </div>
+
           <div style="text-align:right">
+
             <div style="font-weight:600;color:${isIn?'var(--green)':'var(--red)'}">${isIn?'+':'-'}${r.qty} 个</div>
+
             <div style="font-size:12px;color:var(--muted);margin-top:2px">${fmt(r.qty*r.price)}</div>
+
           </div>
+
           <div style="font-size:12px;color:var(--muted);min-width:82px;text-align:right">${r.date}</div>
+
         </div>`;
+
       }).join('')
+
     : '<div class="empty">暂无流水记录</div>';
+
 }
+
+
 
 function renderBoxes(){
+
   const kw = (document.getElementById('boxSearch').value||'').toLowerCase();
+
   const ft = document.getElementById('boxFilterType').value;
+
   const fm = document.getElementById('boxFilterMaterial').value;
 
+
+
   const source = visibleBoxes();
+
   const mats = [...new Set(source.map(b=>b.material))];
+
   const msel = document.getElementById('boxFilterMaterial');
+
   const cur = msel.value;
+
   msel.innerHTML = '<option value="">全部材质</option>' + mats.map(m=>`<option ${m===cur?'selected':''}>${esc(m)}</option>`).join('');
 
+
+
   let list = source.filter(b=>
+
     (!kw || b.name.toLowerCase().includes(kw) || (b.material||'').toLowerCase().includes(kw)) &&
+
     (!ft || b.std===ft) && (!fm || b.material===fm)
+
   );
 
+
+
   const t = document.getElementById('boxTable');
+
   if(!list.length){
+
     t.innerHTML = `<tr><td><div class="empty">${customerMode ? '暂无产品报价，请联系商家获取最新报价' : '暂无盒子，点击右上角「新增盒子」开始建档'}</div></td></tr>`;
+
     return;
+
   }
+
+
 
   let head, rows;
+
   if(customerMode){
+
     /* 客户视图：只有规格、售价和有货状态，无成本/库存数量/备注/操作 */
+
     head = `<tr><th>产品名称</th><th>尺寸（长×宽×高）</th><th>类型</th><th>厚度</th><th>材质</th><th>单价</th><th>库存状态</th></tr>`;
+
     rows = list.map(b=>{
+
       /* 分享链接数据带 inStock 标志；本地数据实时计算 */
+
       const inStock = sharedBoxes ? !!b.inStock : stockOf(b.id) > 0;
+
       return `<tr>
+
       <td><b>${esc(b.name)}</b></td>
+
       <td>${sizeStr(b)}</td>
+
       <td><span class="tag ${b.std==='std'?'std':'custom'}">${b.std==='std'?'标准':'定制'}</span></td>
+
       <td>${esc(b.thickness)}</td>
+
       <td>${esc(b.material)}</td>
+
       <td style="color:var(--primary);font-weight:700">${fmt(b.price)}</td>
+
       <td><span class="tag ${inStock?'in':'out'}">${inStock?'有货':'无货'}</span></td>
+
     </tr>`;}).join('');
+
   }else{
+
     head = `<tr><th>名称</th><th>尺寸（长×宽×高）</th><th>类型</th><th>厚度</th><th>材质</th><th>库存</th><th>展示售价</th><th>平均成本</th><th>备注</th><th>操作</th></tr>`;
+
     rows = list.map(b=>`<tr>
+
       <td><b>${esc(b.name)}</b></td>
+
       <td>${sizeStr(b)}</td>
+
       <td><span class="tag ${b.std==='std'?'std':'custom'}">${b.std==='std'?'标准':'自定义'}</span></td>
+
       <td>${esc(b.thickness)}</td>
+
       <td>${esc(b.material)}</td>
+
       <td>${stockOf(b.id)}</td>
+
       <td><b>${fmt(b.price)}</b></td>
+
       <td>${fmt(avgCost(b.id))}</td>
+
       <td>${esc(b.note||'')}</td>
+
       <td style="white-space:nowrap">
+
         <button class="btn sm gray" onclick="openBoxModal('${b.id}')">编辑</button>
+
         <button class="btn sm red" onclick="delBox('${b.id}')">删除</button>
+
       </td>
+
     </tr>`).join('');
+
   }
+
   t.innerHTML = head + rows;
+
 }
+
+
 
 function renderIO(){
+
   const inF = document.getElementById('inFrom').value, inT = document.getElementById('inTo').value;
+
   const outF = document.getElementById('outFrom').value, outT = document.getElementById('outTo').value;
+
   let inR = DB.records.filter(r=>r.type==='in');
+
   let outR = DB.records.filter(r=>r.type==='out');
+
   if(inF) inR = inR.filter(r=>r.date>=inF);
+
   if(inT) inR = inR.filter(r=>r.date<=inT);
+
   if(outF) outR = outR.filter(r=>r.date>=outF);
+
   if(outT) outR = outR.filter(r=>r.date<=outT);
+
   inR.sort((a,b)=>b.date.localeCompare(a.date));
+
   outR.sort((a,b)=>b.date.localeCompare(a.date));
+
   document.getElementById('inList').innerHTML = inR.length ? ioTableHTML(inR) : '<div class="empty">暂无入库记录</div>';
+
   document.getElementById('outList').innerHTML = outR.length ? ioTableHTML(outR) : '<div class="empty">暂无出库记录</div>';
+
 }
+
 function clearRange(type){
+
   document.getElementById(type+'From').value = '';
+
   document.getElementById(type+'To').value = '';
+
   renderIO();
+
 }
+
 function ioTableHTML(list){
+
   return `<table><tr><th>日期</th><th>盒子</th><th>数量</th><th>单价</th><th>金额</th><th>往来</th><th>备注</th><th></th></tr>` +
+
     list.map(r=>{ const b=boxById(r.boxId); return `<tr>
+
       <td>${r.date}</td><td>${b?esc(b.name):'[已删除]'}</td><td>${r.qty}</td>
+
       <td>${fmt(r.price)}</td><td>${fmt(r.qty*r.price)}</td>
+
       <td>${esc(r.party||'')}</td><td>${esc(r.note||'')}</td>
+
       <td><button class="btn sm red" onclick="delRecord('${r.id}')">删除</button></td></tr>`;}).join('') +
+
     `</table>`;
+
 }
+
+
 
 function renderRecords(){
+
   const fb = document.getElementById('recFilterBox').value;
+
   const ft = document.getElementById('recFilterType').value;
+
   const from = document.getElementById('recFrom').value;
+
   const to = document.getElementById('recTo').value;
+
   let list = [...DB.records].sort((a,b)=>b.date.localeCompare(a.date));
+
   if(fb) list = list.filter(r=>r.boxId===fb);
+
   if(ft) list = list.filter(r=>r.type===ft);
+
   if(from) list = list.filter(r=>r.date>=from);
+
   if(to) list = list.filter(r=>r.date<=to);
+
   document.getElementById('recordTable').innerHTML = list.length ? recordTableHTML(list, false)
+
     : '<tr><td><div class="empty">没有符合条件的记录</div></td></tr>';
+
 }
+
 function recordTableHTML(list, compact){
+
   let head = `<tr><th>日期</th><th>类型</th><th>盒子</th><th>数量</th><th>单价</th><th>金额</th><th>往来</th><th>备注</th>`;
+
   if(!compact) head += `<th></th>`;
+
   head += `</tr>`;
+
   return head + list.map(r=>{
+
     const b = boxById(r.boxId);
+
     return `<tr><td>${r.date}</td>
+
       <td><span class="tag ${r.type}">${r.type==='in'?'入库':'出库'}</span></td>
+
       <td>${b?esc(b.name):'[已删除]'}</td><td>${r.qty}</td>
+
       <td>${fmt(r.price)}</td><td>${fmt(r.qty*r.price)}</td>
+
       <td>${esc(r.party||'')}</td><td>${esc(r.note||'')}</td>
+
       ${compact?'':`<td><button class="btn sm red" onclick="delRecord('${r.id}')">删除</button></td>`}
+
     </tr>`;
+
   }).join('');
+
 }
+
+
 
 /* ============ 利润统计 ============ */
+
 let profitRange = 'all';
+
 function setProfitRange(r, btn){
+
   profitRange = r;
+
   document.querySelectorAll('#pfRangeBar button').forEach(b=>b.classList.add('gray'));
+
   if(btn) btn.classList.remove('gray');
+
   renderProfit();
+
 }
+
 function profitRangeFilter(list){
+
   const now = new Date();
+
   const pad = n=>String(n).padStart(2,'0');
+
   const today = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+
   if(profitRange==='month') return list.filter(r=>r.date.startsWith(today.slice(0,7)));
+
   if(profitRange==='year')  return list.filter(r=>r.date.startsWith(today.slice(0,4)));
+
   if(profitRange==='m3' || profitRange==='m6'){
+
     const months = profitRange==='m3' ? 3 : 6;
+
     const d = new Date(now.getFullYear(), now.getMonth()-months+1, 1);
+
     const from = `${d.getFullYear()}-${pad(d.getMonth()+1)}-01`;
+
     return list.filter(r=>r.date>=from && r.date<=today);
+
   }
+
   if(profitRange==='custom'){
+
     const f = document.getElementById('pfFrom').value, t = document.getElementById('pfTo').value;
+
     return list.filter(r=>(!f || r.date>=f) && (!t || r.date<=t));
+
   }
+
   return list;
+
 }
+
 function renderProfit(){
+
   const outs = profitRangeFilter(DB.records.filter(r=>r.type==='out'));
+
   let revenue=0, cost=0, totalQty=0;
+
   const per = {}, perMonth = {};
+
   outs.forEach(r=>{
+
     const c = avgCost(r.boxId);
+
     revenue += r.qty*r.price; cost += r.qty*c; totalQty += r.qty;
+
     if(!per[r.boxId]) per[r.boxId] = {qty:0, rev:0, cost:0};
+
     per[r.boxId].qty += r.qty; per[r.boxId].rev += r.qty*r.price; per[r.boxId].cost += r.qty*c;
+
     const m = r.date.slice(0,7);
+
     if(!perMonth[m]) perMonth[m] = {qty:0, rev:0, cost:0};
+
     perMonth[m].qty += r.qty; perMonth[m].rev += r.qty*r.price; perMonth[m].cost += r.qty*c;
+
   });
+
   const profit = revenue - cost;
+
   const rate = revenue>0 ? (profit/revenue*100).toFixed(1) : '0.0';
+
   const avgUnit = totalQty>0 ? (profit/totalQty).toFixed(2) : '0.00';
+
   document.getElementById('profitStats').innerHTML = `
+
     <div class="stat"><div class="label">销售额</div><div class="value blue">${fmt(revenue)}</div></div>
+
     <div class="stat"><div class="label">成本</div><div class="value">${fmt(cost)}</div></div>
+
     <div class="stat"><div class="label">毛利</div><div class="value ${profit>=0?'green':''}" style="${profit<0?'color:var(--red)':''}">${fmt(profit)}</div></div>
+
     <div class="stat"><div class="label">毛利率</div><div class="value ${profit>=0?'green':''}">${rate}%</div></div>
+
     <div class="stat"><div class="label">销量（个）</div><div class="value">${totalQty}</div></div>
+
     <div class="stat"><div class="label">单个平均毛利</div><div class="value ${profit>=0?'green':''}">${fmt(avgUnit)}</div></div>`;
 
+
+
   // 按月明细
+
   const months = Object.keys(perMonth).sort().reverse();
+
   const mt = document.getElementById('profitMonthTable');
+
   mt.innerHTML = months.length
+
     ? `<tr><th>月份</th><th>销量</th><th>销售额</th><th>成本</th><th>毛利</th><th>毛利率</th><th>单个毛利</th></tr>` +
+
       months.map(m=>{
+
         const p = perMonth[m];
+
         const pf = p.rev - p.cost, rt = p.rev>0 ? (pf/p.rev*100).toFixed(1) : '0.0';
+
         const up = p.qty>0 ? (pf/p.qty).toFixed(2) : '0.00';
+
         return `<tr><td><b>${m}</b></td><td>${p.qty}</td><td>${fmt(p.rev)}</td><td>${fmt(p.cost)}</td>
+
           <td class="${pf>=0?'profit-pos':'profit-neg'}">${fmt(pf)}</td><td class="${pf>=0?'profit-pos':'profit-neg'}">${rt}%</td>
+
           <td class="${pf>=0?'profit-pos':'profit-neg'}">${fmt(up)}</td></tr>`;
+
       }).join('')
+
     : '<tr><td><div class="empty">所选区间暂无出库数据</div></td></tr>';
 
+
+
   // 各盒子明细
+
   const ids = Object.keys(per);
+
   const t = document.getElementById('profitTable');
+
   if(!ids.length){ t.innerHTML = '<tr><td><div class="empty">所选区间暂无出库数据</div></td></tr>'; return; }
+
   t.innerHTML = `<tr><th>盒子</th><th>销量</th><th>销售额</th><th>成本</th><th>毛利</th><th>毛利率</th><th>单个毛利</th></tr>` +
+
     ids.map(id=>{
+
       const b = boxById(id), p = per[id];
+
       const pf = p.rev - p.cost, rt = p.rev>0 ? (pf/p.rev*100).toFixed(1) : '0.0';
+
       const up = p.qty>0 ? (pf/p.qty).toFixed(2) : '0.00';
+
       return `<tr><td>${b?esc(b.name):'[已删除]'}</td><td>${p.qty}</td><td>${fmt(p.rev)}</td><td>${fmt(p.cost)}</td>
+
         <td class="${pf>=0?'profit-pos':'profit-neg'}">${fmt(pf)}</td><td class="${pf>=0?'profit-pos':'profit-neg'}">${rt}%</td>
+
         <td class="${pf>=0?'profit-pos':'profit-neg'}">${fmt(up)}</td></tr>`;
+
     }).join('');
+
 }
+
+
 
 /* ============ 客户分享链接 ============ */
+
 function shareCustomerLink(){
+
   if(!DB.boxes.length) return toast('还没有盒子可分享');
+
   const snapshot = DB.boxes.map(b=>({name:b.name,l:b.l,w:b.w,h:b.h,std:b.std,thickness:b.thickness,material:b.material,price:b.price,inStock:stockOf(b.id)>0}));
+
   const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(snapshot)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+
   const url = location.origin + location.pathname + '#data=' + b64;
+
   if(url.length > 6000) toast('提示：盒子较多，链接较长，部分聊天工具可能截断');
+
   document.getElementById('linkText').value = url;
+
   document.getElementById('linkModal').classList.add('show');
+
   copyLink();
+
 }
+
 function copyLink(){
+
   const ta = document.getElementById('linkText');
+
   const ok = ()=>toast('客户报价链接已复制，发给客户即可');
+
   if(navigator.clipboard && navigator.clipboard.writeText){
+
     navigator.clipboard.writeText(ta.value).then(ok).catch(()=>{ ta.select(); document.execCommand('copy'); ok(); });
+
   }else{ ta.select(); document.execCommand('copy'); ok(); }
+
 }
+
+
 
 /* ============ 盒子增删改 ============ */
+
 let editingBoxId = null;
+
 document.getElementById('bThick').addEventListener('change', e=>{
+
   document.getElementById('bThickCustom').style.display = e.target.value==='__custom'?'block':'none';
+
 });
+
 document.getElementById('bMat').addEventListener('change', e=>{
+
   document.getElementById('bMatCustom').style.display = e.target.value==='__custom'?'block':'none';
+
 });
+
+
 
 function openBoxModal(id){
+
   editingBoxId = id || null;
+
   document.getElementById('boxModalTitle').textContent = id ? '编辑盒子' : '新增盒子';
+
   const b = id ? boxById(id) : null;
+
   document.getElementById('bName').value = b?.name||'';
+
   document.getElementById('bL').value = b?.l??''; document.getElementById('bW').value = b?.w??''; document.getElementById('bH').value = b?.h??'';
+
   document.getElementById('bStd').value = b?.std||'std';
+
   document.getElementById('bPrice').value = b?.price??'';
+
   document.getElementById('bNote').value = b?.note||'';
+
   setSelectWithCustom('bThick','bThickCustom', b?.thickness);
+
   setSelectWithCustom('bMat','bMatCustom', b?.material);
+
   document.getElementById('boxModal').classList.add('show');
+
 }
+
 function setSelectWithCustom(selId, cusId, val){
+
   const sel = document.getElementById(selId), cus = document.getElementById(cusId);
+
   const opts = [...sel.options].map(o=>o.value);
+
   if(val && !opts.includes(val)){ sel.value='__custom'; cus.value=val; cus.style.display='block'; }
+
   else { sel.value = val || sel.options[0].value; cus.value=''; cus.style.display = sel.value==='__custom'?'block':'none'; }
+
 }
+
 function getSelectWithCustom(selId, cusId){
+
   const sel = document.getElementById(selId);
+
   return sel.value==='__custom' ? document.getElementById(cusId).value.trim() : sel.value;
+
 }
+
 function saveBox(){
+
   const name = document.getElementById('bName').value.trim();
+
   const price = parseFloat(document.getElementById('bPrice').value);
+
   if(!name) return toast('请填写盒子名称');
+
   if(isNaN(price) || price<0) return toast('请填写展示售价（给客户看的价格）');
+
   const data = {
+
     name,
+
     l: parseFloat(document.getElementById('bL').value)||0,
+
     w: parseFloat(document.getElementById('bW').value)||0,
+
     h: parseFloat(document.getElementById('bH').value)||0,
+
     std: document.getElementById('bStd').value,
+
     thickness: getSelectWithCustom('bThick','bThickCustom'),
+
     material: getSelectWithCustom('bMat','bMatCustom'),
+
     price,
+
     note: document.getElementById('bNote').value.trim()
+
   };
+
   if(editingBoxId){
+
     Object.assign(boxById(editingBoxId), data);
+
     toast('已保存修改');
+
   }else{
+
     DB.boxes.push({ id: uid(), ...data, createdAt: new Date().toISOString() });
+
     toast('盒子已建档');
+
   }
+
   save(); closeModal('boxModal'); renderAll();
+
 }
+
 function delBox(id){
+
   const b = boxById(id);
+
   const hasRec = DB.records.some(r=>r.boxId===id);
+
   const msg = hasRec ? `「${b.name}」已有出入库记录，删除将一并删除其流水，确定？` : `确定删除「${b.name}」？`;
+
   askConfirm(msg, ()=>{
+
     DB.boxes = DB.boxes.filter(x=>x.id!==id);
+
     DB.records = DB.records.filter(r=>r.boxId!==id);
+
     save(); renderAll(); toast('已删除');
+
   });
+
 }
+
+
 
 /* ============ 出入库 ============ */
+
 let ioType = 'in';
+
 function openIOModal(type){
+
   ioType = type;
+
   if(!DB.boxes.length) return toast('请先在「盒子档案」中新增盒子');
+
   document.getElementById('ioModalTitle').textContent = type==='in' ? '入库单' : '出库单';
+
   document.getElementById('ioPriceLabel').textContent = type==='in' ? '进货单价（元/个）*（客户不可见）' : '销售单价（元/个）*';
+
   document.getElementById('ioPartyLabel').textContent = type==='in' ? '供应商' : '客户';
+
   document.getElementById('ioNoteLabel').textContent = type==='in' ? '入库备注' : '出库备注';
+
   document.getElementById('ioDate').value = new Date().toISOString().slice(0,10);
+
   document.getElementById('ioQty').value = '';
+
   document.getElementById('ioPrice').value = '';
+
   document.getElementById('ioParty').value = '';
+
   document.getElementById('ioNote').value = '';
+
   fillBoxSelects();
+
   document.getElementById('ioModal').classList.add('show');
+
 }
+
 function fillBoxSelects(){
+
   const opts = DB.boxes.map(b=>`<option value="${b.id}">${esc(b.name)}（${sizeStr(b)} ${esc(b.material)}）</option>`).join('');
+
   document.getElementById('ioBox').innerHTML = opts;
+
   const rec = document.getElementById('recFilterBox');
+
   const cur = rec.value;
+
   rec.innerHTML = '<option value="">全部盒子</option>' + DB.boxes.map(b=>`<option value="${b.id}" ${b.id===cur?'selected':''}>${esc(b.name)}</option>`).join('');
+
 }
+
 document.getElementById('ioBox').addEventListener('change', e=>{
+
   const b = boxById(e.target.value);
+
   if(b && ioType==='out') document.getElementById('ioPrice').value = b.price;
+
 });
+
 function saveIO(){
+
   const boxId = document.getElementById('ioBox').value;
+
   const qty = parseInt(document.getElementById('ioQty').value);
+
   const price = parseFloat(document.getElementById('ioPrice').value);
+
   const date = document.getElementById('ioDate').value;
+
   if(!boxId) return toast('请选择盒子');
+
   if(!qty || qty<=0) return toast('请填写数量');
+
   if(isNaN(price) || price<0) return toast('请填写单价');
+
   if(!date) return toast('请选择日期');
+
   const doSave = ()=>{
+
     DB.records.push({
+
       id: uid(), boxId, type: ioType, qty, price, date,
+
       party: document.getElementById('ioParty').value.trim(),
+
       note: document.getElementById('ioNote').value.trim()
+
     });
+
     save(); closeModal('ioModal'); renderAll();
+
     toast(ioType==='in' ? '入库成功' : '出库成功');
+
   };
+
   if(ioType==='out' && qty > stockOf(boxId)){
+
     askConfirm(`当前库存仅 ${stockOf(boxId)} 个，出库 ${qty} 个将导致负库存，继续？`, doSave);
+
     return;
+
   }
+
   doSave();
+
 }
+
 function delRecord(id){
+
   askConfirm('确定删除这条记录？', ()=>{
+
     DB.records = DB.records.filter(r=>r.id!==id);
+
     save(); renderAll(); toast('已删除');
+
   });
+
 }
+
+
 
 /* ============ 导出 ============ */
+
 function recordsToCSV(list){
+
   const rows = [['日期','类型','盒子','规格','数量','单价','金额','往来','备注']];
+
   [...list].sort((a,b)=>a.date.localeCompare(b.date)).forEach(r=>{
+
     const b = boxById(r.boxId);
+
     rows.push([r.date, r.type==='in'?'入库':'出库', b?b.name:'[已删除]', b?sizeStr(b):'', r.qty, r.price, (r.qty*r.price).toFixed(2), r.party||'', r.note||'']);
+
   });
+
   return '﻿' + rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+
 }
+
 function downloadCSV(csv, name){
+
   const a = document.createElement('a');
+
   a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+
   a.download = name + '_' + new Date().toISOString().slice(0,10) + '.csv';
+
   a.click();
+
   toast('已导出 CSV');
+
 }
+
 /* 流水记录页导出：跟随当前筛选条件 */
+
 function exportCSV(){
+
   const fb = document.getElementById('recFilterBox').value;
+
   const ft = document.getElementById('recFilterType').value;
+
   const from = document.getElementById('recFrom').value;
+
   const to = document.getElementById('recTo').value;
+
   let list = [...DB.records];
+
   if(fb) list = list.filter(r=>r.boxId===fb);
+
   if(ft) list = list.filter(r=>r.type===ft);
+
   if(from) list = list.filter(r=>r.date>=from);
+
   if(to) list = list.filter(r=>r.date<=to);
+
   if(!list.length) return toast('当前筛选条件下没有数据可导出');
+
   downloadCSV(recordsToCSV(list), '仓库流水');
+
 }
+
 /* 出入库页导出：跟随该卡片的时间范围 */
+
 function exportIO(type){
+
   const f = document.getElementById(type+'From').value;
+
   const t = document.getElementById(type+'To').value;
+
   let list = DB.records.filter(r=>r.type===type);
+
   if(f) list = list.filter(r=>r.date>=f);
+
   if(t) list = list.filter(r=>r.date<=t);
+
   if(!list.length) return toast('所选时间范围内没有数据可导出');
+
   const label = type==='in' ? '入库' : '出库';
+
   const range = (f||t) ? `(${f||'开始'}至${t||'今日'})` : '(全部)';
+
   downloadCSV(recordsToCSV(list), label + '数据' + range);
+
 }
+
+
 
 function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+
 document.querySelectorAll('.modal-mask').forEach(m=>m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('show'); }));
 
+
+
 showPage('boxes');
+
 </script>
+
 </body>
+
 </html>
+
