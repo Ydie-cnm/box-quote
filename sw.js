@@ -1,5 +1,5 @@
 /* 纸盒报价中心 Service Worker：离线缓存，打开更快、断网可用 */
-const CACHE = 'box-app-v1';
+const CACHE = 'box-app-v3-cloud';
 const ASSETS = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
